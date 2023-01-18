@@ -103,6 +103,9 @@ def interp():
             setvalue(cmd)
         elif( c == 'h'):
             helpx()
+        # append by me
+        elif( c == 'dis'):
+            ld.dumpAS(int(cmd[1]), int(cmd[2]))
         elif( c == 'q'):
             break
         else:

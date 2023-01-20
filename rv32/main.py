@@ -1,7 +1,7 @@
 # Command line interface for risv-c simulator
 #     version 1.0  with 9 instructions
-#     18 Feb 2022
-#     Prabhas Chongstitvatana
+#     20 Jan 2023
+#     Li Keran
 
 import rv32c   as rv      # cpu
 import load32  as ld      # memory
@@ -20,7 +20,7 @@ def pr32(n):
 
 def show():  
     print("pc",savePC," ",end="")
-    ld.prCurrentOp()
+    ld.pr_Current_instr()
     print("  ",end="")
     for i in range(1,11):
         print(" x",i,":",sep="",end="")

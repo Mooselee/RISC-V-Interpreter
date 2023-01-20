@@ -1,7 +1,7 @@
 # riscv32 sim, loader,  load32.py
 #     version 1.0  with 9 instructions
-#     18 Feb 2022
-#     Prabhas Chongstitvatana
+#     20 Jan 2023
+#     Li Keran
 
 # export
 #   setM(), getM(), decode(),
@@ -93,8 +93,8 @@ opstr = {
 
 # def prOp(op2):
 #     print(opstr[op2],end=" ")     
-def pr_instr_name(instr_name):
-    print(instr_name,end=" ")     
+# def pr_instr_name(instr_name):
+#     print(instr_name,end=" ")     
 
 # encode instruction into internal code 0..9
 # def encodeOpx(op2,xf3,xf7):
@@ -123,87 +123,113 @@ def pr_instr_name(instr_name):
 #     return 0
 
 
-def encodeOpx(op2,xf3,xf7):
-    if(op2 == opcode_lui):
-        return opstr['U'][0] # 'lui'
-    elif(op2 == opcode_auipc):
-        return opstr['U'][1] # 'auipc'
-    elif(op2 == opcode_jal):
-        return opstr['J'][0] # 'jal'
-    elif(op2 == opcode_jalr):
-        return opstr['I'][0] # 'jalr'
-    elif(op2 == opcode_branch):
-        if(xf3 == 0):
-            return opstr['B'][0] # 'beq'
-        elif(xf3 == 1):
-            return opstr['B'][1] # 'bne'
-        elif(xf3 == 4):
-            return opstr['B'][2] # 'blt'
-        elif(xf3 == 5):
-            return opstr['B'][3] # 'bge'
-        elif(xf3 == 6):
-            return opstr['B'][4] # 'bltu'
-        elif(xf3 == 7):
-            return opstr['B'][5] # 'bgeu'
-    elif(op2 == opcode_load):
-        if(xf3 == 0):
-            return opstr['I'][1] # 'lb'
-        elif(xf3 == 1):
-            return opstr['I'][2] # 'lh'
-        elif(xf3 == 2):
-            return opstr['I'][3] # 'lw'
-        elif(xf3 == 4):
-            return opstr['I'][4] # 'lbu'
-        elif(xf3 == 5):
-            return opstr['I'][5] # 'lhu'
-    elif(op2 == opcode_store):
-        if(xf3 == 0):
-            return opstr['S'][0] # 'sb'
-        elif(xf3 == 1):
-            return opstr['S'][1] # 'sh'
-        elif(xf3 == 2):
-            return opstr['S'][2] # 'sw'
-    elif(op2 == opcode_alui):
-        if(xf3 == 0):
-            return opstr['I'][6] # 'addi'
-        elif(xf3 == 2):
-            return opstr['I'][7] # 'slti'
-        elif(xf3 == 3):
-            return opstr['I'][8] # 'sltiu'
-        elif(xf3 == 4):
-            return opstr['I'][9] # 'xori'
-        elif(xf3 == 6):
-            return opstr['I'][10] # 'ori'
-        elif(xf3 == 7):
-            return opstr['I'][11] # 'andi'
-        elif(xf3 == 1 and xf7 == 0):
-            return opstr['I'][12] # 'slli'
-        elif(xf3 == 5 and xf7 == 0):
-            return opstr['I'][13] # 'srli'
-        elif(xf3 == 5 and xf7 == 32):
-            return opstr['I'][14] # 'srai'
-    elif(op2 == opcode_alur):
-        if(xf3 == 0 and xf7 == 0):
-            return opstr['R'][0] # 'add'
-        elif(xf3 == 0 and xf7 == 32):
-            return opstr['R'][1] # 'sub'
-        elif(xf3 == 1 and xf7 == 0):
-            return opstr['R'][2] # 'sll'
-        elif(xf3 == 2 and xf7 == 0):
-            return opstr['R'][3] # 'slt'
-        elif(xf3 == 3 and xf7 == 0):
-            return opstr['R'][4] # 'sltu'
-        elif(xf3 == 4 and xf7 == 0):
-            return opstr['R'][5] # 'xor'
-        elif(xf3 == 5 and xf7 == 0):
-            return opstr['R'][6] # 'srl'
-        elif(xf3 == 5 and xf7 == 32):
-            return opstr['R'][7] # 'sra'
-        elif(xf3 == 6 and xf7 == 0):
-            return opstr['R'][8] # 'or'
-        elif(xf3 == 7 and xf7 == 0):
-            return opstr['R'][9] # 'and'
+def decodeInstr(op2,xf3,xf7):
+    '''
+    decode instruction
+    '''
+    global instr_name, opcode_type, instr_type
 
+    if(op2 == opcode_lui):
+        instr_name = opstr['U'][0] # 'lui'
+        opcode_type = 'LUI'
+        instr_type = 'U'
+    elif(op2 == opcode_auipc):
+        instr_name = opstr['U'][1] # 'auipc'
+        opcode_type = 'AUIPC'
+        instr_type = 'U'
+    elif(op2 == opcode_jal):
+        instr_name = opstr['J'][0] # 'jal'
+        opcode_type = 'JAL'
+        instr_type = 'J'
+    elif(op2 == opcode_jalr):
+        instr_name = opstr['I'][0] # 'jalr'
+        opcode_type = 'JALR'
+        instr_type = 'I'
+    elif(op2 == opcode_branch):
+        opcode_type = 'BRANCH'
+        instr_type = 'B'
+        if(xf3 == 0):
+            instr_name = opstr['B'][0] # 'beq'
+        elif(xf3 == 1):
+            instr_name = opstr['B'][1] # 'bne'
+        elif(xf3 == 4):
+            instr_name = opstr['B'][2] # 'blt'
+        elif(xf3 == 5):
+            instr_name = opstr['B'][3] # 'bge'
+        elif(xf3 == 6):
+            instr_name = opstr['B'][4] # 'bltu'
+        elif(xf3 == 7):
+            instr_name = opstr['B'][5] # 'bgeu'
+    elif(op2 == opcode_load):
+        opcode_type = 'LOAD'
+        instr_type = 'I'
+        if(xf3 == 0):
+            instr_name = opstr['I'][1] # 'lb'
+        elif(xf3 == 1):
+            instr_name = opstr['I'][2] # 'lh'
+        elif(xf3 == 2):
+            instr_name = opstr['I'][3] # 'lw'
+        elif(xf3 == 4):
+            instr_name = opstr['I'][4] # 'lbu'
+        elif(xf3 == 5):
+            instr_name = opstr['I'][5] # 'lhu'
+    elif(op2 == opcode_store):
+        opcode_type = 'STORE'
+        instr_type = 'S'
+        if(xf3 == 0):
+            instr_name = opstr['S'][0] # 'sb'
+        elif(xf3 == 1):
+            instr_name = opstr['S'][1] # 'sh'
+        elif(xf3 == 2):
+            instr_name = opstr['S'][2] # 'sw'
+    elif(op2 == opcode_alui):
+        opcode_type = 'ALUI'
+        instr_type = 'I'
+        if(xf3 == 0):
+            instr_name = opstr['I'][6] # 'addi'
+        elif(xf3 == 2):
+            instr_name = opstr['I'][7] # 'slti'
+        elif(xf3 == 3):
+            instr_name = opstr['I'][8] # 'sltiu'
+        elif(xf3 == 4):
+            instr_name = opstr['I'][9] # 'xori'
+        elif(xf3 == 6):
+            instr_name = opstr['I'][10] # 'ori'
+        elif(xf3 == 7):
+            instr_name = opstr['I'][11] # 'andi'
+        elif(xf3 == 1 and xf7 == 0):
+            instr_name = opstr['I'][12] # 'slli'
+        elif(xf3 == 5 and xf7 == 0):
+            instr_name = opstr['I'][13] # 'srli'
+        elif(xf3 == 5 and xf7 == 32):
+            instr_name = opstr['I'][14] # 'srai'
+    elif(op2 == opcode_alur):
+        opcode_type = 'ALUR'
+        instr_type = 'R'
+        if(xf3 == 0 and xf7 == 0):
+            instr_name = opstr['R'][0] # 'add'
+        elif(xf3 == 0 and xf7 == 32):
+            instr_name = opstr['R'][1] # 'sub'
+        elif(xf3 == 1 and xf7 == 0):
+            instr_name = opstr['R'][2] # 'sll'
+        elif(xf3 == 2 and xf7 == 0):
+            instr_name = opstr['R'][3] # 'slt'
+        elif(xf3 == 3 and xf7 == 0):
+            instr_name = opstr['R'][4] # 'sltu'
+        elif(xf3 == 4 and xf7 == 0):
+            instr_name = opstr['R'][5] # 'xor'
+        elif(xf3 == 5 and xf7 == 0):
+            instr_name = opstr['R'][6] # 'srl'
+        elif(xf3 == 5 and xf7 == 32):
+            instr_name = opstr['R'][7] # 'sra'
+        elif(xf3 == 6 and xf7 == 0):
+            instr_name = opstr['R'][8] # 'or'
+        elif(xf3 == 7 and xf7 == 0):
+            instr_name = opstr['R'][9] # 'and'
+    else:
+        instr_name = 'nop'
+        opcode_type = 'nop'
+        instr_type = 'NaN'
     
 
 
@@ -212,11 +238,22 @@ def encodeOpx(op2,xf3,xf7):
 #         return x | 0x0FFFFF000
 #     return x
 
-# must decode() first
-# return tuple of opx with rd, rs1, rs2
-def getOp():
-    instr_name = encodeOpx(op,f3,f7) #return a string of instr_name
-    return (instr_name,rd,rs1,rs2)
+# def getOp():
+#     '''
+#     must decode() first
+#     return tuple of instr_name, rd, rs1, rs2
+#     '''
+#     instr_name = encodeOpx(op,f3,f7) #return a string of instr_name
+#     return (instr_name,rd,rs1,rs2)
+
+def getInstr():
+    '''
+    must decode() first
+    return tuple of instr_name, opcode_type, instr_type
+    '''
+    decodeInstr(op,f3,f7)
+    return (instr_name, opcode_type, instr_type, rd, rs1, rs2)
+    
 
 def getIm():
     '''
@@ -230,9 +267,7 @@ def getIm_S():
     '''
     return (f7<<5) + rd    # positive integer [check further]
 
-#  extract offset B-type format for branch instructions
 
-# it is a bit complicate, took me 3 hours to get it right
 def getIm_B():
     '''
     must decode() first, extract imm_B for branch instructions from instr[31]+[7]+[30:25]+[11:8]+0
@@ -290,12 +325,9 @@ def disassem(c):
     print instruction infos followed by rd, rs1, rs2
     '''
     decode(c)
-    pr_instr_name(encodeOpx(op,f3,f7))
-    # if( op in [51,99] ):
-    #     print(f7,rs2, end=" ")
-    # elif( op in [3,19,35]):
-    #     print(imm, end=" ")
-    print(rd, rs1, rs2)
+    # decodeInstr(op,f3,f7)
+    # print(instr_name, opcode_type, instr_type, rd, rs1, rs2)
+    pr_Current_instr()
 
 
 def dumpAS(ads,n):
@@ -337,26 +369,21 @@ def prB(rs1,rs2,im):
 #         prB(rs1,rs2,getIm_B())
     
 def pr_Current_instr():
-    instr_name = encodeOpx(op,f3,f7)
-    pr_instr_name(instr_name)
-    if(op2 == opcode_lui): # 'lui'
-
-    elif(op2 == opcode_auipc):
-
-    elif(op2 == opcode_jal):
-
-    elif(op2 == opcode_jalr):
-
-    elif(op2 == opcode_branch):
-        prB(rs1,rs2,getIm_B())
-    elif(op2 == opcode_load):
-        prLS(rd,rs1,imm)
-    elif(op2 == opcode_store):
-        prLS(rs2,rs1,getIm_S())
-    elif(op2 == opcode_alui):
-        prI(rd,rs1,imm)
-    elif(op2 == opcode_alur):
+    decodeInstr(op,f3,f7)
+    print(instr_name,end=" ")
+    if(opcode_type == 'ALUR'):
         pr3R(rd,rs1,rs2)
+    elif(opcode_type == 'LOAD'):
+        prLS(rd,rs1,imm)
+    elif(opcode_type == 'STORE'):
+        prLS(rs2,rs1,getIm_S())
+    elif(opcode_type == 'ALUI'):
+        prI(rd,rs1,imm)
+    elif(opcode_type == 'BRANCH'):
+        prB(rs1,rs2,getIm_B())
+    print()
+  # print(instr_name, rd, rs1, rs2)
+
 
 #loadobj("test.obj")
 #dumpM(0,9)

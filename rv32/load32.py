@@ -11,8 +11,8 @@
 '''
 Instructions supported:
 R-type: add, sub, and
-I-type: addi, lw, 
-S-type: sw, 
+I-type: addi, lw,
+S-type: sw,
 B-type: beq, bne, blt, bge,
 U-type:
 J-type:

@@ -33,6 +33,7 @@ def helpx():
     print("g - go")
     print("t - single step")
     print("d ads n - dump memory") 
+    print("dis ads n - disassemble content in the memory") 
     print("r - show registers")
     print("s [xn,mn,pc] v - set [reg,mem,pc]")
     print("h - this help")

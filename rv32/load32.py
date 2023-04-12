@@ -44,7 +44,7 @@ opcode_system = 115 #I: 1110011
 MAXMEM = 1000
 Memory = array.array('L',[0]*MAXMEM)     # memory size MAXMEM
 
-def setMemory(ads,v):                    # internal address is word
+def setMemory(ads,v):                    # internal address is word, divide ads by 4, which equals to >>2
     a = ads>>2
     if(a < MAXMEM):
         Memory[a] = v

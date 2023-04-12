@@ -5,7 +5,7 @@
 
 '''
 Instructions supported:
-R-type: add, sub, and
+R-type: add, sub, and, or
 I-type: addi, lw, 
 S-type: sw, 
 B-type: beq, bne, blt, bge,
@@ -46,18 +46,18 @@ Rdata = 0
 imm = 0
 offset = 0
 # --- multiplexor wires
-mx1_0 = 0 # pc = pc + 4
-mx1_1 = 0 # pc = pc + offset(branch)
-mx2_0 = 0 # alu_in_2 = R2
-mx2_1 = 0 # alu_in_2 = imm
-mx3_0 = 0 # Rdata = Aout
-mx3_1 = 0 # Rdata = Mout
-mx4_0 = 0 # alu_in_1 = R1
-mx4_1 = 0 # alu_in_1 = pc(auipc)
+mux_pc_0 = 0 # pc = pc + 4
+mux_pc_1 = 0 # pc = pc + offset(branch)
+mux_alusrc2_0 = 0 # alu_in_2 = R2
+mux_alusrc2_1 = 0 # alu_in_2 = imm
+mux_2reg_0 = 0 # Rdata = Aout
+mux_2reg_1 = 0 # Rdata = Mout
+mux_alusrc1_0 = 0 # alu_in_1 = R1
+mux_alusrc1_1 = 0 # alu_in_1 = pc(auipc)
 # --- ALU input/output
-a1 = 0
-a2 = 0
-zero = True
+alusrc1 = 0
+alusrc2 = 0
+branch_condition = True
 # ---- internal ----
 IR = 0
 R1 = 0
@@ -137,7 +137,7 @@ def dodecode():
     op, rd, rs1, rs2, imm, offset
     '''
     global instr_name, opcode_type, instr_type, rd, rs1, rs2, imm, offset
-    global mx2_1, mx1_1, mx1_0
+    global mux_alusrc2_1, mux_pc_1, mux_pc_0
 
     ld.decode(IR)
     (instr_name, opcode_type, instr_type, rd, rs1, rs2) = ld.getInstr()
@@ -156,30 +156,30 @@ def dodecode():
 
     # update wires
     # branch
-    mx1_1 = PC + offset
-    mx1_0 = PC + 4
+    mux_pc_1 = PC + offset
+    mux_pc_0 = PC + 4
     # I-type instruction rs2 = imm
-    mx2_1 = imm
+    mux_alusrc2_1 = imm
 
 def doAlusrc1():
     '''
-    mux4 select data for ALU port a1
+    mux4 select data for ALU port alusrc1
     '''
-    global a1
+    global alusrc1
     if(cv['aluSrc1'] == 1): # AUIPC
-        a1 = mx4_1
+        alusrc1 = mux_alusrc1_1
     else:
-        a1 = mx4_0
+        alusrc1 = mux_alusrc1_0
 
 def doAlusrc2():
     '''
-    mux2 select data for ALU port a2
+    mux2 select data for ALU port alusrc2
     '''
-    global a2
+    global alusrc2
     if(cv['aluSrc2'] == 1): # AUIPC/JALR/LOAD/STORE/ALUI
-        a2 = mx2_1
+        alusrc2 = mux_alusrc2_1
     else:
-        a2 = mx2_0
+        alusrc2 = mux_alusrc2_0
 
 def doALUctrl():
     '''
@@ -226,47 +226,52 @@ def doALUctrl():
 
 
 def doALU():
-    global aluop, Aout, zero, ads2, mx3_0
+    '''
+    Try to do this in Dictionary & lamda!
+    '''
+    global aluop, Aout, branch_condition, ads2, mux_2reg_0
     if(aluop == alu_add):
-        Aout = a1 + a2
+        Aout = alusrc1 + alusrc2
+    #elif(aluop == alu_or):
+        #Aout = alusrc1 | alusrc2
     elif(aluop == alu_beq):     # beq
         Aout = 0
-        zero = a1 == a2
+        branch_condition = alusrc1 == alusrc2
     elif(aluop == alu_bne):     # bne
         Aout = 0
-        zero = a1 != a2
+        branch_condition = alusrc1 != alusrc2
     elif(aluop == alu_slt):     # blt
         Aout = 0
-        zero = a1 < a2
+        branch_condition = alusrc1 < alusrc2
     elif(aluop == alu_bge):     # bge
         Aout = 0
-        zero = a1 >= a2
+        branch_condition = alusrc1 >= alusrc2
 
     # update wires
     ads2 = Aout
-    mx3_0 = Aout
+    mux_2reg_0 = Aout
     
 def doBranch():
     global PC
 
-    if((cv['branch'] == 1) and zero):
+    if((cv['branch'] == 1) and branch_condition):
         print("branch taken")
-        PC = mx1_1
+        PC = mux_pc_1
     else:
-        PC = mx1_0
+        PC = mux_pc_0
     print("next pc ",PC)
         
 def doexecute():
     global cv, R1, R2
-    global a1, mx2_0, mx4_0,Mdata
+    global alusrc1, mux_alusrc2_0, mux_alusrc1_0,Mdata
 
     cv = control_vector[opcode_type]
     # print(cv)
     R1 = R[rs1]      # read registers
     R2 = R[rs2]
     # update wires
-    mx4_0 = R1
-    mx2_0 = R2
+    mux_alusrc1_0 = R1
+    mux_alusrc2_0 = R2
     Mdata = R2
     doAlusrc1()
     doAlusrc2()
@@ -275,11 +280,11 @@ def doexecute():
     doBranch()
     
 def doMread():
-    global Mout, mx3_1
+    global Mout, mux_2reg_1
     if(cv['memRead'] == 1):
         Mout = ld.getMemory(ads2)
         # update wire
-        mx3_1 = Mout
+        mux_2reg_1 = Mout
     
 def doMwrite():
     if(cv['memWrite'] == 1):
@@ -292,9 +297,9 @@ def domemory():
 def doMtoR():
     global Rdata
     if(cv['mem2reg'] == 1):
-        Rdata = mx3_1
+        Rdata = mux_2reg_1
     else:
-        Rdata = mx3_0
+        Rdata = mux_2reg_0
 
 def doRwrite():
     if(cv['regWrite'] == 1):

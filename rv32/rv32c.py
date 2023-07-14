@@ -1,5 +1,4 @@
 #  risc-v 32-bit simulator with control signals, rv32c.py
-#     version 1.0  with 9 instructions
 #     20 Jan 2023
 #     Li Keran
 
@@ -87,21 +86,6 @@ def setPC(n):
 def checkNop():           # check if current is nop 
     return instr_name == 'nop'
 
-#  control unit for execute, memory, writeback
-# def setControl_vector():
-#     global control_vector
-#     control_vector = []
-#     control_vector.append([0,0,0,0,0,0,0])   # nop
-#     control_vector.append([0,2,0,0,0,0,1])   # add
-#     control_vector.append([0,3,0,0,0,0,1])   # sub
-#     control_vector.append([1,2,0,0,0,0,1])   # addi
-#     control_vector.append([1,2,0,1,0,1,1])   # lw
-#     control_vector.append([1,2,0,0,1,1,0])   # sw
-#     control_vector.append([0,4,1,0,0,0,0])   # beq
-#     control_vector.append([0,5,1,0,0,0,0])   # bne
-#     control_vector.append([0,6,1,0,0,0,0])   # blt
-#     control_vector.append([0,7,1,0,0,0,0])   # bge
-
 def setControl_vector():
     '''
     control unit for execute, memory, writeback
@@ -133,7 +117,7 @@ def dofetch():
 
 def dodecode():
     '''
-    from IR  decode all fields in an instruction
+    from IR decode all fields in an instruction
     op, rd, rs1, rs2, imm, offset
     '''
     global instr_name, opcode_type, instr_type, rd, rs1, rs2, imm, offset

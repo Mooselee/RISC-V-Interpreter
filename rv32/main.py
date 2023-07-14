@@ -1,5 +1,4 @@
 # Command line interface for risv-c simulator
-#     version 1.0  with 9 instructions
 #     20 Jan 2023
 #     Li Keran
 
@@ -116,16 +115,10 @@ def interp():
   
 def main():
     rv.setControl_vector()
-    #inp = input("object file:").strip().split()
     script, obj_name = argv
     objfile = obj_name.strip().split()
     fname = objfile[0]
     ld.loadobj(fname)
-#    ld.loadobj('add1-5.obj')
-#    ld.loadobj('test.obj')
-#    ld.dumpAS(0,9)   
     interp()
 
 main()
-
-

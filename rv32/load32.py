@@ -1,9 +1,7 @@
 # riscv32 sim, loader,  load32.py
-#     version 1.0  with 9 instructions
 #     20 Jan 2023
 #     Li Keran
 
-# export
 #   setM(), getM(), decode(),
 #   getOp(), getIm(), getIm_B(), getIm_S
 #   loadobj(), prCurrentOp()
@@ -90,37 +88,6 @@ opstr = {
         'U':['lui','auipc'],
         'J':['jal']}
 
-
-# def prOp(op2):
-#     print(opstr[op2],end=" ")     
-# def pr_instr_name(instr_name):
-#     print(instr_name,end=" ")     
-
-# encode instruction into internal code 0..9
-# def encodeOpx(op2,xf3,xf7):
-#     if( op2 == 51 and xf3 == 0):
-#         if(xf7 == 0):
-#             return 1
-#         elif(xf7 == 32):
-#             return 2
-#     elif(op2 == 19 and xf3 == 0):
-#         return 3
-#     elif(op2 == 3 and xf3 == 2):
-#         return 4
-#     elif(op2 == 35 and xf3 == 2):
-#         return 5
-#     elif(op2 == 99):
-#         if(xf3 == 0):
-#             return 6
-#         elif(xf3 == 1):
-#             return 7
-#         elif(xf3 == 4):
-#             return 8
-#         elif(xf3 == 5):
-#             return 9
-#     elif(op2 == 51 and xf3 == 7 and xf7 == 0):   # and x2,x3,x4
-#         return 10
-#     return 0
 
 
 def decodeInstr(op2,xf3,xf7):
@@ -233,18 +200,6 @@ def decodeInstr(op2,xf3,xf7):
     
 
 
-# def signx12(x):          # sign extension 12 bits
-#     if( x & 0x0800 ):
-#         return x | 0x0FFFFF000
-#     return x
-
-# def getOp():
-#     '''
-#     must decode() first
-#     return tuple of instr_name, rd, rs1, rs2
-#     '''
-#     instr_name = encodeOpx(op,f3,f7) #return a string of instr_name
-#     return (instr_name,rd,rs1,rs2)
 
 def getInstr():
     '''
@@ -325,8 +280,6 @@ def disassem(c):
     print instruction infos followed by rd, rs1, rs2
     '''
     decode(c)
-    # decodeInstr(op,f3,f7)
-    # print(instr_name, opcode_type, instr_type, rd, rs1, rs2)
     pr_Current_instr()
 
 
@@ -353,20 +306,6 @@ def prLS(r,base,im):
 def prB(rs1,rs2,im):
     print('x',rs1," ",'x',rs2," ",im,sep="",end="")
     
-# call decode() first
-# def prCurrentOp():
-#     instr_name = encodeOpx(op,f3,f7)
-#     pr_instr_name(instr_name)
-#     if(op2 in [1,2,10]):           # add, sub, and
-#         pr3R(rd,rs1,rs2)
-#     elif(op2 == 3):             # addi
-#         prI(rd,rs1,imm)
-#     elif(op2 == 4):             # lw
-#         prLS(rd,rs1,imm)
-#     elif(op2 == 5):             # sw
-#         prLS(rs2,rs1,getIm_S())
-#     elif(op2 in [6,7,8,9]):     # branch
-#         prB(rs1,rs2,getIm_B())
     
 def pr_Current_instr():
     decodeInstr(op,f3,f7)
@@ -382,13 +321,4 @@ def pr_Current_instr():
     elif(opcode_type == 'BRANCH'):
         prB(rs1,rs2,getIm_B())
     print()
-  # print(instr_name, rd, rs1, rs2)
-
-
-#loadobj("test.obj")
-#dumpM(0,9)
-#dumpAS(0,9)
-
-
-
 
